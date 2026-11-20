@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    container_name: ariadne-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ariadne
+      POSTGRES_PASSWORD: ariadne_dev
+      POSTGRES_DB: ariadne
+    ports:
+      - "5434:5432"
+    volumes:
+      - ariadne-data:/var/lib/postgresql/data
+
+volumes:
+  ariadne-data:
