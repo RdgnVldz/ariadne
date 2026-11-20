@@ -15,6 +15,13 @@
       "when": 1795210005631,
       "tag": "0001_regular_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795214919218,
+      "tag": "0002_puzzling_apocalypse",
+      "breakpoints": true
     }
   ]
 }

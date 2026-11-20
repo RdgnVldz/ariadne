@@ -1,50 +1,17 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
-import { Logo } from "@/components/logo";
-import { auth } from "@/lib/auth";
-import { SignOutButton } from "./sign-out-button";
+import { AppShell } from "@/components/app-shell";
+import { linkClass } from "@/components/form";
+import { requireUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-function Shell({
-  right,
-  children,
-}: {
-  right?: React.ReactNode;
-  children?: React.ReactNode;
-}) {
+async function Welcome() {
+  const user = await requireUser();
+  const firstName = user.name.split(" ")[0];
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-ink/15">
-        <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
-          <Logo />
-          {right}
-        </div>
-      </header>
-      <main className="mx-auto max-w-4xl px-6 py-14">{children}</main>
-    </div>
-  );
-}
-
-async function Dashboard() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect("/sign-in");
-
-  const firstName = session.user.name.split(" ")[0];
-
-  return (
-    <Shell
-      right={
-        <div className="flex items-center gap-4">
-          <span className="hidden text-sm text-ink-soft sm:inline">
-            {session.user.email}
-          </span>
-          <SignOutButton />
-        </div>
-      }
-    >
+    <>
       <h1 className="text-3xl font-semibold tracking-tight">
         Welcome, {firstName}
       </h1>
@@ -54,15 +21,22 @@ async function Dashboard() {
           Add your work history, skills, and projects once. Every resume and
           cover letter starts from it.
         </p>
+        <p className="mt-3">
+          <Link href="/profile" className={linkClass}>
+            Open your profile
+          </Link>
+        </p>
       </div>
-    </Shell>
+    </>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<Shell />}>
-      <Dashboard />
-    </Suspense>
+    <AppShell>
+      <Suspense fallback={null}>
+        <Welcome />
+      </Suspense>
+    </AppShell>
   );
 }
