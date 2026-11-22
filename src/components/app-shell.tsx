@@ -30,6 +30,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link href="/profile" className="underline-offset-4 hover:underline">
                 Profile
               </Link>
+              <Link href="/jobs" className="underline-offset-4 hover:underline">
+                Jobs
+              </Link>
             </nav>
           </div>
           <Suspense fallback={null}>
