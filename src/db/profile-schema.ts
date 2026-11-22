@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
 export const profile = pgTable("profile", {
@@ -41,4 +41,42 @@ export const workExperience = pgTable(
       .defaultNow(),
   },
   (t) => [index("work_experience_user_idx").on(t.userId)]
+);
+
+export const education = pgTable(
+  "education",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    school: text("school").notNull(),
+    degree: text("degree").notNull(),
+    field: text("field"),
+    location: text("location"),
+    startDate: text("start_date"), // "YYYY-MM", optional
+    endDate: text("end_date"), // "YYYY-MM", optional (graduation or expected)
+    highlights: text("highlights")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("education_user_idx").on(t.userId)]
+);
+
+export const skillGroup = pgTable(
+  "skill_group",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    items: text("items").array().notNull(),
+    position: integer("position").notNull().default(0),
+  },
+  (t) => [index("skill_group_user_idx").on(t.userId)]
 );

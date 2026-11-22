@@ -4,15 +4,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
+  createEducation,
   createExperience,
+  deleteEducation,
   deleteExperience,
+  replaceSkillGroups,
   saveProfile,
+  updateEducation,
   updateExperience,
 } from "@/lib/profile-data";
 import {
+  educationSchema,
   experienceSchema,
   formToObject,
   profileSchema,
+  skillsSchema,
 } from "@/lib/profile-validation";
 import { requireUser } from "@/lib/session";
 
@@ -70,4 +76,52 @@ export async function deleteExperienceAction(id: string, _form: FormData) {
     await deleteExperience(user.id, id);
   }
   revalidatePath("/profile");
+}
+
+export async function saveEducationAction(
+  id: string,
+  _prev: FormState,
+  form: FormData
+): Promise<FormState> {
+  const user = await requireUser();
+  const values = formToObject(form);
+
+  const parsed = educationSchema.safeParse(values);
+  if (!parsed.success) {
+    return { errors: z.flattenError(parsed.error).fieldErrors, values };
+  }
+
+  if (id === "new") {
+    await createEducation(user.id, parsed.data);
+  } else {
+    const valid = z.uuid().safeParse(id).success;
+    const updated = valid && (await updateEducation(user.id, id, parsed.data));
+    if (!updated) return { values, message: "That entry no longer exists." };
+  }
+
+  revalidatePath("/profile");
+  redirect("/profile");
+}
+
+export async function deleteEducationAction(id: string, _form: FormData) {
+  const user = await requireUser();
+  if (z.uuid().safeParse(id).success) {
+    await deleteEducation(user.id, id);
+  }
+  revalidatePath("/profile");
+}
+
+export async function saveSkillsAction(
+  _prev: FormState,
+  form: FormData
+): Promise<FormState> {
+  const user = await requireUser();
+  const values = formToObject(form);
+  const parsed = skillsSchema.safeParse(values);
+  if (!parsed.success) {
+    return { errors: z.flattenError(parsed.error).fieldErrors, values };
+  }
+  await replaceSkillGroups(user.id, parsed.data.skills);
+  revalidatePath("/profile");
+  return { values, message: "Skills saved." };
 }

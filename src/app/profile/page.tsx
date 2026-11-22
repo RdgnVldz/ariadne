@@ -4,18 +4,26 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { linkClass, secondaryButtonClass } from "@/components/form";
 import { formatMonth } from "@/lib/format";
-import { getProfile, listExperiences } from "@/lib/profile-data";
+import {
+  getProfile,
+  listEducation,
+  listExperiences,
+  listSkillGroups,
+} from "@/lib/profile-data";
 import { requireUser } from "@/lib/session";
 import { deleteExperienceAction } from "./actions";
 import { ProfileForm } from "./profile-form";
+import { EducationSection, SkillsSection } from "./sections";
 
 export const metadata: Metadata = { title: "Profile" };
 
 async function ProfileContent() {
   const user = await requireUser();
-  const [profile, experiences] = await Promise.all([
+    const [profile, experiences, educationList, skillGroups] = await Promise.all([
     getProfile(user.id),
     listExperiences(user.id),
+    listEducation(user.id),
+    listSkillGroups(user.id),
   ]);
 
   const defaults = {
@@ -101,6 +109,8 @@ async function ProfileContent() {
           </ul>
         )}
       </section>
+      <EducationSection items={educationList} />
+      <SkillsSection groups={skillGroups} />
     </>
   );
 }
