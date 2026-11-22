@@ -123,17 +123,7 @@ export function parseSkillGroups(
     const colon = trimmed.indexOf(":");
     if (colon <= 0) return null;
     const category = trimmed.slice(0, colon).trim();
-    const seen = new Set<string>();
-    const items = trimmed
-      .slice(colon + 1)
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => {
-        const key = s.toLowerCase();
-        if (!s || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+    const items = splitList(trimmed.slice(colon + 1));
     if (!category || items.length === 0) return null;
     groups.push({ category, items });
   }
@@ -160,3 +150,45 @@ export const skillsSchema = z.object({
 
 export type EducationInput = z.output<typeof educationSchema>;
 export type SkillGroupInput = z.output<typeof skillsSchema>["skills"][number];
+
+export function splitList(input: string): string[] {
+  const seen = new Set<string>();
+  return input
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => {
+      const key = s.toLowerCase();
+      if (!s || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+export const projectSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Enter the project name.")
+    .max(100, "Keep the name under 100 characters."),
+  link: optionalLink,
+  repoUrl: optionalLink,
+  description: optionalText(300),
+  techStack: z
+    .string()
+    .transform(splitList)
+    .pipe(
+      z
+        .array(z.string().max(40, "Keep each technology under 40 characters."))
+        .max(20, "Use 20 technologies or fewer.")
+    ),
+  highlights: z
+    .string()
+    .transform(parseHighlights)
+    .pipe(
+      z
+        .array(z.string().max(400, "Keep each bullet under 400 characters."))
+        .max(6, "Use 6 bullets or fewer.")
+    ),
+});
+
+export type ProjectInput = z.output<typeof projectSchema>;

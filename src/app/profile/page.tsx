@@ -8,23 +8,26 @@ import {
   getProfile,
   listEducation,
   listExperiences,
+  listProjects,
   listSkillGroups,
 } from "@/lib/profile-data";
 import { requireUser } from "@/lib/session";
 import { deleteExperienceAction } from "./actions";
 import { ProfileForm } from "./profile-form";
-import { EducationSection, SkillsSection } from "./sections";
+import { EducationSection, ProjectsSection, SkillsSection } from "./sections";
 
 export const metadata: Metadata = { title: "Profile" };
 
 async function ProfileContent() {
   const user = await requireUser();
-    const [profile, experiences, educationList, skillGroups] = await Promise.all([
-    getProfile(user.id),
-    listExperiences(user.id),
-    listEducation(user.id),
-    listSkillGroups(user.id),
-  ]);
+  const [profile, experiences, educationList, skillGroups, projects] =
+    await Promise.all([
+      getProfile(user.id),
+      listExperiences(user.id),
+      listEducation(user.id),
+      listSkillGroups(user.id),
+      listProjects(user.id),
+    ]);
 
   const defaults = {
     fullName: profile?.fullName ?? user.name,
@@ -109,6 +112,7 @@ async function ProfileContent() {
           </ul>
         )}
       </section>
+      <ProjectsSection items={projects} />
       <EducationSection items={educationList} />
       <SkillsSection groups={skillGroups} />
     </>

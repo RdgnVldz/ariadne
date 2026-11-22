@@ -1,10 +1,17 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db";
-import { education, profile, skillGroup, workExperience } from "../db/schema";
+import {
+  education,
+  profile,
+  project,
+  skillGroup,
+  workExperience,
+} from "../db/schema";
 import type {
   EducationInput,
   ExperienceInput,
   ProfileInput,
+  ProjectInput,
   SkillGroupInput,
 } from "./profile-validation";
 
@@ -138,4 +145,49 @@ export async function replaceSkillGroups(
       );
     }
   });
+}
+
+export async function listProjects(userId: string) {
+  return db
+    .select()
+    .from(project)
+    .where(eq(project.userId, userId))
+    .orderBy(desc(project.createdAt));
+}
+
+export async function getProject(userId: string, id: string) {
+  const [row] = await db
+    .select()
+    .from(project)
+    .where(and(eq(project.id, id), eq(project.userId, userId)));
+  return row ?? null;
+}
+
+export async function createProject(userId: string, data: ProjectInput) {
+  const [row] = await db
+    .insert(project)
+    .values({ userId, ...data })
+    .returning({ id: project.id });
+  return row.id;
+}
+
+export async function updateProject(
+  userId: string,
+  id: string,
+  data: ProjectInput
+) {
+  const rows = await db
+    .update(project)
+    .set(data)
+    .where(and(eq(project.id, id), eq(project.userId, userId)))
+    .returning({ id: project.id });
+  return rows.length > 0;
+}
+
+export async function deleteProject(userId: string, id: string) {
+  const rows = await db
+    .delete(project)
+    .where(and(eq(project.id, id), eq(project.userId, userId)))
+    .returning({ id: project.id });
+  return rows.length > 0;
 }

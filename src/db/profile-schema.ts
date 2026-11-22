@@ -80,3 +80,29 @@ export const skillGroup = pgTable(
   },
   (t) => [index("skill_group_user_idx").on(t.userId)]
 );
+
+export const project = pgTable(
+  "project",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    link: text("link"),
+    repoUrl: text("repo_url"),
+    description: text("description"),
+    techStack: text("tech_stack")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    highlights: text("highlights")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("project_user_idx").on(t.userId)] 
+);
