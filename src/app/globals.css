@@ -61,3 +61,13 @@ html {
     opacity: 1;
   }
 }
+
+@page {
+  margin: 14mm;
+}
+
+@media print {
+  html {
+    background: white;
+  }
+}

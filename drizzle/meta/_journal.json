@@ -43,6 +43,13 @@
       "when": 1795354537485,
       "tag": "0005_fixed_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795355389717,
+      "tag": "0006_uneven_mariko_yashida",
+      "breakpoints": true
     }
   ]
 }

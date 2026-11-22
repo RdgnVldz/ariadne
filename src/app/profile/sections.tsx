@@ -113,7 +113,7 @@ export function ProjectsSection({ items }: { items: ProjectRow[] }) {
           <p className="max-w-md text-ink-soft">
             No projects yet.{" "}
             <Link href="/profile/projects/new" className={linkClass}>
-              Add a project you're proud of
+              Add a project you&apos;re proud of
             </Link>
             , with what you built and the tools you used.
           </p>

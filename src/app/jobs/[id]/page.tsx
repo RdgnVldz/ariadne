@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { z } from "zod";
 import { AppShell } from "@/components/app-shell";
-import { linkClass } from "@/components/form";
+import { linkClass, secondaryButtonClass } from "@/components/form";
 import type { Requirement } from "@/lib/analysis";
 import { getJob } from "@/lib/jobs-data";
 import { requireUser } from "@/lib/session";
@@ -67,6 +67,11 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         {analysis.seniority !== "unspecified" ? `, ${analysis.seniority} level` : ""}
       </p>
       <p className="mt-4 max-w-xl text-ink-soft">{analysis.summary}</p>
+      <p className="mt-6">
+        <Link href={`/jobs/${row.id}/resume`} className={secondaryButtonClass}>
+            Tailor my resume
+        </Link>
+      </p>
 
       <div className="mt-10">
         {row.fitScore === null ? (
@@ -97,7 +102,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
           </h2>
           <p className="mt-2 max-w-md text-sm text-ink-soft">
             These terms appear in the posting but not in your profile. Add them
-            only if they're true for you.
+            only if they&apos;re true for you.
           </p>
           <p className="mt-3">{row.missingKeywords.join(", ")}</p>
         </section>

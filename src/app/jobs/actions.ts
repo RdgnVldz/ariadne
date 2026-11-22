@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { analyzePosting } from "@/lib/ai";
+import { analyzePosting, tailorResume } from "@/lib/ai";
 import {
   buildProfileText,
   computeFitScore,
@@ -14,6 +14,7 @@ import {
   countJobsSince,
   createJob,
   deleteJob,
+  getJob,
 } from "@/lib/jobs-data";
 import {
   getProfile,
@@ -23,6 +24,13 @@ import {
   listSkillGroups,
 } from "@/lib/profile-data";
 import { requireUser } from "@/lib/session";
+import { buildTailoringInput, sanitizeTailored } from "@/lib/resume";
+import {
+  DAILY_RESUME_LIMIT,
+  countResumesSince,
+  loadResumeSource,
+  saveResume,
+} from "@/lib/resume-data";
 
 export type AnalyzeState = { error?: string; postingText?: string } | null;
 
@@ -115,4 +123,49 @@ export async function deleteJobAction(id: string, _form: FormData) {
     await deleteJob(user.id, id);
   }
   revalidatePath("/jobs");
+}
+
+export type ResumeState = { error?: string } | null;
+
+export async function generateResumeAction(
+  jobId: string,
+  _prev: ResumeState,
+  _form: FormData
+): Promise<ResumeState> {
+  const user = await requireUser();
+  if (!z.uuid().safeParse(jobId).success) {
+    return { error: "That job no longer exists." };
+  }
+  const row = await getJob(user.id, jobId);
+  if (!row) return { error: "That job no longer exists." };
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  if ((await countResumesSince(user.id, since)) >= DAILY_RESUME_LIMIT) {
+    return {
+      error: `You've reached today's limit of ${DAILY_RESUME_LIMIT} resumes. Try again tomorrow.`,
+    };
+  }
+
+  const source = await loadResumeSource(user.id);
+  if (source.experiences.length + source.projects.length === 0) {
+    return { error: "Add work experience or projects to your profile first." };
+  }
+
+  let result;
+  try {
+    result = await tailorResume({
+      postingText: row.postingText,
+      analysis: row.analysis,
+      sourceText: buildTailoringInput(source),
+    });
+  } catch (error) {
+    console.error("Resume tailoring failed", error);
+    return { error: "We couldn't write the resume right now. Try again in a moment." };
+  }
+
+  const { tailored, warnings } = sanitizeTailored(result.tailored, source);
+  await saveResume(user.id, jobId, { tailored, warnings, model: result.model });
+
+  revalidatePath(`/jobs/${jobId}/resume`);
+  redirect(`/jobs/${jobId}/resume`);
 }

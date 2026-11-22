@@ -17,7 +17,7 @@ async function UserMenu() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
-      <header className="border-b border-ink/15">
+        <header className="border-b border-ink/15 print:hidden">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between gap-4 px-6">
           <div className="flex items-center gap-8">
             <Link href="/dashboard">
@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Suspense>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl px-6 py-14">{children}</main>
+      <main className="mx-auto max-w-4xl px-6 py-14 print:max-w-none print:p-0">{children}</main>
     </div>
   );
 }
