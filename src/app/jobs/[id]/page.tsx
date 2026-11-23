@@ -67,9 +67,12 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         {analysis.seniority !== "unspecified" ? `, ${analysis.seniority} level` : ""}
       </p>
       <p className="mt-4 max-w-xl text-ink-soft">{analysis.summary}</p>
-      <p className="mt-6">
+      <p className="mt-6 flex flex-wrap gap-3">
         <Link href={`/jobs/${row.id}/resume`} className={secondaryButtonClass}>
-            Tailor my resume
+          Tailor my resume
+        </Link>
+        <Link href={`/jobs/${row.id}/cover-letter`} className={secondaryButtonClass}>
+          Write cover letter
         </Link>
       </p>
 

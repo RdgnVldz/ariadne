@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { analyzePosting, tailorResume } from "@/lib/ai";
+import { analyzePosting, tailorResume, writeCoverLetter } from "@/lib/ai";
 import {
   buildProfileText,
   computeFitScore,
@@ -24,7 +24,22 @@ import {
   listSkillGroups,
 } from "@/lib/profile-data";
 import { requireUser } from "@/lib/session";
-import { buildTailoringInput, sanitizeTailored } from "@/lib/resume";
+import {
+  buildSourceText,
+  buildTailoringInput,
+  sanitizeTailored,
+} from "@/lib/resume";
+import {
+  assembleLetter,
+  letterBodySchema,
+  sanitizeParagraphs,
+} from "@/lib/cover-letter";
+import {
+  DAILY_LETTER_LIMIT,
+  countCoverLettersSince,
+  saveCoverLetter,
+  updateCoverLetterBody,
+} from "@/lib/cover-letter-data";
 import {
   DAILY_RESUME_LIMIT,
   countResumesSince,
@@ -164,4 +179,87 @@ export async function generateResumeAction(jobId: string): Promise<ResumeState> 
 
   revalidatePath(`/jobs/${jobId}/resume`);
   redirect(`/jobs/${jobId}/resume`);
+}
+
+export type LetterState = {
+  error?: string;
+  message?: string;
+  body?: string;
+} | null;
+
+export async function generateCoverLetterAction(
+  jobId: string
+): Promise<ResumeState> {
+  const user = await requireUser();
+  if (!z.uuid().safeParse(jobId).success) {
+    return { error: "That job no longer exists." };
+  }
+  const row = await getJob(user.id, jobId);
+  if (!row) return { error: "That job no longer exists." };
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  if ((await countCoverLettersSince(user.id, since)) >= DAILY_LETTER_LIMIT) {
+    return {
+      error: `You've reached today's limit of ${DAILY_LETTER_LIMIT} cover letters. Try again tomorrow.`,
+    };
+  }
+
+  const source = await loadResumeSource(user.id);
+  if (source.experiences.length + source.projects.length === 0) {
+    return { error: "Add work experience or projects to your profile first." };
+  }
+
+  let result;
+  try {
+    result = await writeCoverLetter({
+      postingText: row.postingText,
+      analysis: row.analysis,
+      company: row.company,
+      sourceText: buildSourceText(source, false),
+    });
+  } catch (error) {
+    console.error("Cover letter failed", error);
+    return { error: "We couldn't write the letter right now. Try again in a moment." };
+  }
+
+  const { paragraphs, warnings } = sanitizeParagraphs(result.paragraphs, source);
+  if (paragraphs.length === 0) {
+    return { error: "The draft didn't pass our checks. Try generating it again." };
+  }
+
+  const name = source.profile?.fullName || user.name;
+  await saveCoverLetter(user.id, jobId, {
+    body: assembleLetter(paragraphs, name),
+    warnings,
+    model: result.model,
+  });
+
+  revalidatePath(`/jobs/${jobId}/cover-letter`);
+  redirect(`/jobs/${jobId}/cover-letter`);
+}
+
+export async function saveCoverLetterAction(
+  letterId: string,
+  jobId: string,
+  _prev: LetterState,
+  form: FormData
+): Promise<LetterState> {
+  const user = await requireUser();
+  const body = String(form.get("body") ?? "").replace(/\r\n/g, "\n");
+
+  const parsed = letterBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return { body, error: parsed.error.issues[0]?.message ?? "Check the letter and try again." };
+  }
+  if (!z.uuid().safeParse(letterId).success) {
+    return { body, error: "That letter no longer exists." };
+  }
+
+  const saved = await updateCoverLetterBody(user.id, letterId, parsed.data);
+  if (!saved) return { body, error: "That letter no longer exists." };
+
+  if (z.uuid().safeParse(jobId).success) {
+    revalidatePath(`/jobs/${jobId}/cover-letter`);
+  }
+  return { body: parsed.data, message: "Saved." };
 }

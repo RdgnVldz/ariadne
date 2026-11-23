@@ -50,6 +50,13 @@
       "when": 1795355389717,
       "tag": "0006_uneven_mariko_yashida",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795394095987,
+      "tag": "0007_empty_gladiator",
+      "breakpoints": true
     }
   ]
 }

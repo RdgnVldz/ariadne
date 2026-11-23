@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  boolean,
   uuid,
 } from "drizzle-orm/pg-core";
 import type { Analysis } from "../lib/analysis";
@@ -59,5 +60,35 @@ export const resume = pgTable(
   (t) => [
     index("resume_job_created_idx").on(t.jobId, t.createdAt),
     index("resume_user_created_idx").on(t.userId, t.createdAt),
+  ]
+);
+
+export const coverLetter = pgTable(
+  "cover_letter",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => job.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    warnings: text("warnings")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    model: text("model").notNull(),
+    edited: boolean("edited").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("cover_letter_job_created_idx").on(t.jobId, t.createdAt),
+    index("cover_letter_user_created_idx").on(t.userId, t.createdAt),
   ]
 );

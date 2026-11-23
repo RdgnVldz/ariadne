@@ -4,14 +4,14 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { z } from "zod";
 import { AppShell } from "@/components/app-shell";
-import { linkClass } from "@/components/form";
 import { ResumeView } from "@/components/resume-view";
 import { getJob } from "@/lib/jobs-data";
 import { buildResumeDoc, resumeToText, runAtsChecks } from "@/lib/resume";
 import { getResume, loadResumeSource } from "@/lib/resume-data";
 import { requireUser } from "@/lib/session";
 import { GenerateButton } from "./generate-button";
-import { PrintButton } from "./print-button";
+import { PrintButton } from "@/components/print-button";
+import { linkClass, secondaryButtonClass } from "@/components/form";
 
 export const metadata: Metadata = { title: "Tailored resume" };
 
@@ -71,11 +71,18 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <PrintButton />
+          <a
+            href={`/api/jobs/${id}/resume/docx`}
+            download
+            className={secondaryButtonClass}
+          >
+            Download Word (.docx)
+          </a>
           <GenerateButton jobId={id} label="Regenerate" secondary />
         </div>
         <p className="mt-3 max-w-lg text-sm text-ink-soft">
-          Read every line before you send it. In the print window, choose  &quot;Save
-          as PDF&quot; and turn off &quot;Headers and footers&quot;.
+          Read every line before you send it. For a PDF, choose Save as PDF in
+          the print window.
         </p>
 
         {saved.warnings.length > 0 && (
