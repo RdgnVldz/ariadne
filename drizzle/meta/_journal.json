@@ -57,6 +57,13 @@
       "when": 1795394095987,
       "tag": "0007_empty_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795396781556,
+      "tag": "0008_oval_maverick",
+      "breakpoints": true
     }
   ]
 }

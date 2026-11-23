@@ -8,6 +8,7 @@ import { linkClass, secondaryButtonClass } from "@/components/form";
 import type { Requirement } from "@/lib/analysis";
 import { getJob } from "@/lib/jobs-data";
 import { requireUser } from "@/lib/session";
+import { ApplicationSection } from "./application-section";
 
 export const metadata: Metadata = { title: "Job analysis" };
 

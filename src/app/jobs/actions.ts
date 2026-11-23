@@ -46,6 +46,11 @@ import {
   loadResumeSource,
   saveResume,
 } from "@/lib/resume-data";
+import type { FormState } from "@/app/profile/actions";
+import { todayInZone } from "@/lib/format";
+import { formToObject } from "@/lib/profile-validation";
+import { statusSchema, trackerDetailsSchema } from "@/lib/tracker";
+import { updateJobDetails, updateJobStatus } from "@/lib/tracker-data";
 
 export type AnalyzeState = { error?: string; postingText?: string } | null;
 
@@ -262,4 +267,42 @@ export async function saveCoverLetterAction(
     revalidatePath(`/jobs/${jobId}/cover-letter`);
   }
   return { body: parsed.data, message: "Saved." };
+}
+
+export async function updateJobStatusAction(
+  jobId: string,
+  status: string
+): Promise<void> {
+  const user = await requireUser();
+  const parsed = statusSchema.safeParse(status);
+  if (!parsed.success || !z.uuid().safeParse(jobId).success) return;
+
+  const updated = await updateJobStatus(user.id, jobId, parsed.data, todayInZone());
+  if (!updated) return;
+
+  revalidatePath("/tracker");
+  revalidatePath(`/jobs/${jobId}`);
+}
+
+export async function saveApplicationDetailsAction(
+  jobId: string,
+  _prev: FormState,
+  form: FormData
+): Promise<FormState> {
+  const user = await requireUser();
+  const values = formToObject(form);
+
+  const parsed = trackerDetailsSchema.safeParse(values);
+  if (!parsed.success) {
+    return { errors: z.flattenError(parsed.error).fieldErrors, values };
+  }
+
+  const saved =
+    z.uuid().safeParse(jobId).success &&
+    (await updateJobDetails(user.id, jobId, parsed.data));
+  if (!saved) return { values, message: "That job no longer exists." };
+
+  revalidatePath(`/jobs/${jobId}`);
+  revalidatePath("/tracker");
+  return { values, message: "Saved." };
 }
