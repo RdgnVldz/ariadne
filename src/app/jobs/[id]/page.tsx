@@ -111,6 +111,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
           <p className="mt-3">{row.missingKeywords.join(", ")}</p>
         </section>
       )}
+      <ApplicationSection userId={user.id} job={row} />
     </>
   );
 }

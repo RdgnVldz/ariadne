@@ -71,4 +71,22 @@ describe("auth (integration)", () => {
     });
     expect(res.ok).toBe(false);
   });
+
+    it("blocks sign-ups that are not on the allow list", async () => {
+    const blocked = `blocked-${crypto.randomUUID()}@example.com`;
+    process.env.ALLOWED_EMAILS = "someone-else@example.com";
+    try {
+      const res = await post("/sign-up/email", {
+        name: "Blocked",
+        email: blocked,
+        password,
+      });
+      expect(res.ok).toBe(false);
+    } finally {
+      delete process.env.ALLOWED_EMAILS;
+    }
+
+    const rows = await db.select().from(user).where(eq(user.email, blocked));
+    expect(rows).toHaveLength(0);
+  });
 });
