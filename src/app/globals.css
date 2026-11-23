@@ -63,7 +63,7 @@ html {
 }
 
 @page {
-  margin: 0;
+  margin: 14mm;
 }
 
 @media print {
