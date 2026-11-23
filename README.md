@@ -6,7 +6,7 @@
 
 Ariadne is a full-stack web app that turns one master profile into a tailored, ATS-friendly resume and cover letter for every job you apply to, and keeps track of each application. AI writes the drafts. Code decides what is allowed to reach the page.
 
-**Live app:** [your-live-url](https://ariadne-swart.vercel.app/)
+**Live app:** [ariadne-swart.vercel.app](https://ariadne-swart.vercel.app/)
 Sign-ups are invitation only, to keep AI costs under control. The screenshots below show the main flow.
 
 
