@@ -117,7 +117,7 @@ export async function analyzeJobAction(
   redirect(`/jobs/${id}`);
 }
 
-export async function deleteJobAction(id: string, _form: FormData) {
+export async function deleteJobAction(id: string) {
   const user = await requireUser();
   if (z.uuid().safeParse(id).success) {
     await deleteJob(user.id, id);
@@ -127,11 +127,7 @@ export async function deleteJobAction(id: string, _form: FormData) {
 
 export type ResumeState = { error?: string } | null;
 
-export async function generateResumeAction(
-  jobId: string,
-  _prev: ResumeState,
-  _form: FormData
-): Promise<ResumeState> {
+export async function generateResumeAction(jobId: string): Promise<ResumeState> {
   const user = await requireUser();
   if (!z.uuid().safeParse(jobId).success) {
     return { error: "That job no longer exists." };

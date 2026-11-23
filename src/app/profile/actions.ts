@@ -74,7 +74,7 @@ export async function saveExperienceAction(
   redirect("/profile");
 }
 
-export async function deleteExperienceAction(id: string, _form: FormData) {
+export async function deleteExperienceAction(id: string) {
   const user = await requireUser();
   if (z.uuid().safeParse(id).success) {
     await deleteExperience(user.id, id);
@@ -107,7 +107,7 @@ export async function saveEducationAction(
   redirect("/profile");
 }
 
-export async function deleteEducationAction(id: string, _form: FormData) {
+export async function deleteEducationAction(id: string) {
   const user = await requireUser();
   if (z.uuid().safeParse(id).success) {
     await deleteEducation(user.id, id);
@@ -155,7 +155,7 @@ export async function saveProjectAction(
   redirect("/profile");
 }
 
-export async function deleteProjectAction(id: string, _form: FormData) {
+export async function deleteProjectAction(id: string) {
   const user = await requireUser();
   if (z.uuid().safeParse(id).success) {
     await deleteProject(user.id, id);

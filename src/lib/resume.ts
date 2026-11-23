@@ -401,14 +401,15 @@ export function runAtsChecks(doc: ResumeDoc, keywords: string[]) {
     },
   ];
 
-  const unique = [
-    ...new Map(
-      keywords
-        .map((k) => k.trim())
-        .filter((k) => k && k.length <= 60)
-        .map((k) => [k.toLowerCase(), k] as const)
-    ).values(),
-  ];
+    const unique: string[] = [];
+    const seenKeywords = new Set<string>();
+    for (const keyword of keywords) {
+        const term = keyword.trim();
+        const key = term.toLowerCase();
+        if (!term || term.length > 60 || seenKeywords.has(key)) continue;
+        seenKeywords.add(key);
+        unique.push(term);
+    }
   const missing = findMissingKeywords(unique, text);
   const missingSet = new Set(missing.map((m) => m.toLowerCase()));
   const found = unique.filter((k) => !missingSet.has(k.toLowerCase()));
