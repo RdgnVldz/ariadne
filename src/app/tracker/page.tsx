@@ -8,6 +8,7 @@ import { formatIsoDate, todayInZone } from "@/lib/format";
 import { STATUSES, STATUS_LABEL } from "@/lib/job-status";
 import { requireUser } from "@/lib/session";
 import { listTrackerJobs } from "@/lib/tracker-data";
+import { followUpsDue } from "@/lib/dashboard";
 
 export const metadata: Metadata = { title: "Tracker" };
 
@@ -30,12 +31,7 @@ async function Board() {
     );
   }
 
-  const due = jobs.filter(
-    (j) =>
-      j.followUpOn &&
-      j.followUpOn <= today &&
-      (j.status === "applied" || j.status === "interviewing")
-  );
+  const due = followUpsDue(jobs, today);
 
   return (
     <>
